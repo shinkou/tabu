@@ -21,7 +21,7 @@ $ docker-compose up -d
 
 ```
 $ curl -X POST -H 'Content-Type: application/json' \
- --data-raw '{"words":"republican","reason":"dissent,obstruction"}' \
+ --data-raw '{"words":"republican","reason":"dissent"}' \
  'http://localhost:8080/'
 
 $ curl -X POST -H 'Content-Type: application/json' \
@@ -43,7 +43,16 @@ $ curl -X DELETE -H 'Content-Type: application/json' \
  'http://localhost:8080/'
 ```
 
+5. You could also update existing entries in the following fashion
+
+```
+$ curl -X PUT -H 'Content-Type: application/json' \
+ --data-raw '{"words":"republican","reason":"dissent,obstruction"}' \
+ 'http://localhost:8080/'
+```
+
 Have fun!
+
 ---
 [1]:https://docs.rs/warp/
 [2]:https://docs.rs/tokio/

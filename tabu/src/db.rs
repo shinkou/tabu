@@ -46,30 +46,43 @@ pub async fn list_tabus(dbpool: &DBPool) -> Result<Vec<Tabu>>
 	Ok(rs.iter().map(|r| row_to_tabu(&r)).collect())
 }
 
-pub async fn create_tabu(dbpool: &DBPool, body: Tabu)
-	-> Result<Tabu>
+pub async fn create_tabu(dbpool: &DBPool, tabu: Tabu) -> Result<Tabu>
 {
 	let dbcnx = get_dbcnx(dbpool).await?;
 	let row = dbcnx.query_one
 		(
 			"INSERT INTO tabu (words, reason) VALUES ($1, $2) RETURNING *"
-			, &[&body.words, &body.reason]
+			, &[&tabu.words, &tabu.reason]
 		)
 		.await
 		.map_err(DBQueryError)?;
 	Ok(row_to_tabu(&row))
 }
 
-pub async fn delete_tabu(dbpool: &DBPool, id: Id) -> Result<u64>
+pub async fn delete_tabu(dbpool: &DBPool, id: Id) -> Result<Tabu>
 {
 	let dbcnx = get_dbcnx(dbpool).await?;
-	dbcnx.execute
+	let row = dbcnx.query_one
 		(
-			"DELETE FROM tabu WHERE words = $1"
+			"DELETE FROM tabu WHERE words = $1 RETURNING *"
 			, &[&id.words]
 		)
 		.await
-		.map_err(DBQueryError)
+		.map_err(DBQueryError)?;
+	Ok(row_to_tabu(&row))
+}
+
+pub async fn update_tabu(dbpool: &DBPool, tabu: Tabu) -> Result<Tabu>
+{
+	let dbcnx = get_dbcnx(dbpool).await?;
+	let row = dbcnx.query_one
+		(
+			"UPDATE tabu SET reason = $2 WHERE words = $1 RETURNING *"
+			, &[&tabu.words, &tabu.reason]
+		)
+		.await
+		.map_err(DBQueryError)?;
+	Ok(row_to_tabu(&row))
 }
 
 fn row_to_tabu(row: &Row) -> Tabu

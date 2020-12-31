@@ -52,9 +52,16 @@ async fn main()
 		.and(with_db(dbpool.clone()))
 		.and_then(handler::delete_tabu_handler);
 
+	let update_one_tabu = warp::put()
+		.and(warp::path::end())
+		.and(post_json())
+		.and(with_db(dbpool.clone()))
+		.and_then(handler::update_tabu_handler);
+
 	let routes = show_all_tabus
 		.or(add_one_tabu)
 		.or(delete_one_tabu)
+		.or(update_one_tabu)
 		.with(warp::cors().allow_any_origin())
 		.recover(error::handle_rejection); 
 
