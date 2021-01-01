@@ -34,7 +34,15 @@ pub fn create_pool() -> std::result::Result<DBPool, mobc::Error<Error>>
 
 pub async fn get_dbcnx(dbpool: &DBPool) -> Result<DBCnx>
 {
-	dbpool.get().await.map_err(DBPoolError)
+	dbpool.get().await.map_err(|e| DBPoolError(e))
+}
+
+pub async fn check_connection(dbpool: &DBPool) -> Result<()>
+{
+	let dbcnx = get_dbcnx(dbpool).await?;
+	dbcnx.execute("SELECT 1", &[])
+		.await.map_err(|e| DBQueryError(e))?;
+	Ok(())
 }
 
 pub async fn list_tabus(dbpool: &DBPool) -> Result<Vec<Tabu>>
@@ -42,7 +50,7 @@ pub async fn list_tabus(dbpool: &DBPool) -> Result<Vec<Tabu>>
 	let dbcnx = get_dbcnx(dbpool).await?;
 	let rs = dbcnx
 		.query("SELECT words, reason FROM tabu ORDER BY words", &[])
-		.await.map_err(DBQueryError)?;
+		.await.map_err(|e| DBQueryError(e))?;
 	Ok(rs.iter().map(|r| row_to_tabu(&r)).collect())
 }
 
@@ -54,8 +62,7 @@ pub async fn create_tabu(dbpool: &DBPool, tabu: Tabu) -> Result<Tabu>
 			"INSERT INTO tabu (words, reason) VALUES ($1, $2) RETURNING *"
 			, &[&tabu.words, &tabu.reason]
 		)
-		.await
-		.map_err(DBQueryError)?;
+		.await.map_err(|e| DBQueryError(e))?;
 	Ok(row_to_tabu(&row))
 }
 
@@ -67,8 +74,7 @@ pub async fn delete_tabu(dbpool: &DBPool, id: Id) -> Result<Tabu>
 			"DELETE FROM tabu WHERE words = $1 RETURNING *"
 			, &[&id.words]
 		)
-		.await
-		.map_err(DBQueryError)?;
+		.await.map_err(|e| DBQueryError(e))?;
 	Ok(row_to_tabu(&row))
 }
 
@@ -80,8 +86,7 @@ pub async fn update_tabu(dbpool: &DBPool, tabu: Tabu) -> Result<Tabu>
 			"UPDATE tabu SET reason = $2 WHERE words = $1 RETURNING *"
 			, &[&tabu.words, &tabu.reason]
 		)
-		.await
-		.map_err(DBQueryError)?;
+		.await.map_err(|e| DBQueryError(e))?;
 	Ok(row_to_tabu(&row))
 }
 

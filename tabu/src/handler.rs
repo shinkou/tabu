@@ -1,6 +1,6 @@
 use crate::{DBPool, data, db};
 use data::{Id, Tabu};
-use warp::{Reply, Rejection, reject, reply};
+use warp::{Reply, Rejection, http::StatusCode, reject, reply};
 
 type Result<T> = std::result::Result<T, Rejection>;
 
@@ -37,4 +37,13 @@ pub async fn update_tabu_handler(tabu: Tabu, dbpool: DBPool)
 		.await
 		.map_err(|e| reject::custom(e))?;
 	Ok(reply::json(&tabu))
+}
+
+pub async fn health_handler(dbpool: DBPool)
+	-> Result<impl Reply>
+{
+	db::check_connection(&dbpool)
+		.await
+		.map_err(|e| reject::custom(e))?;
+	Ok(StatusCode::OK)
 }

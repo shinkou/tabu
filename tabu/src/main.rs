@@ -35,6 +35,10 @@ async fn main()
 {
 	let dbpool = db::create_pool().expect("database pool can be created");
 
+	let check_db_health = warp::path!("health")
+		.and(with_db(dbpool.clone()))
+		.and_then(handler::health_handler);
+
 	let show_all_tabus = warp::get()
 		.and(warp::path::end())
 		.and(with_db(dbpool.clone()))
@@ -58,7 +62,8 @@ async fn main()
 		.and(with_db(dbpool.clone()))
 		.and_then(handler::update_tabu_handler);
 
-	let routes = show_all_tabus
+	let routes = check_db_health
+		.or(show_all_tabus)
 		.or(add_one_tabu)
 		.or(delete_one_tabu)
 		.or(update_one_tabu)
