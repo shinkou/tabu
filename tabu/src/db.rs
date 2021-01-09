@@ -13,13 +13,9 @@ const DBPOOL_MAX_OPEN: u64 = 32;
 const DBPOOL_MAX_IDLE: u64 = 8;
 const DBPOOL_TIMEOUT_SECONDS: u64 = 15;
 
-pub fn create_pool() -> std::result::Result<DBPool, mobc::Error<Error>>
+pub fn create_pool(cnxstr: &str) -> std::result::Result<DBPool, mobc::Error<Error>>
 {
-	let config = Config::from_str
-	(
-		"postgres://postgres:postgres@postgres:5432/postgres"
-	)?;
-
+	let config = Config::from_str(cnxstr)?;
 	let manager = PgConnectionManager::new(config, NoTls);
 
 	Ok

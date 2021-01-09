@@ -4,6 +4,7 @@ use mobc_postgres::{tokio_postgres, PgConnectionManager};
 use tokio_postgres::NoTls;
 use warp::{Filter, Rejection};
 
+mod cli;
 mod data;
 mod db;
 mod error;
@@ -33,7 +34,9 @@ fn post_json() -> impl Filter<Extract = (Tabu,), Error = Rejection> + Clone
 #[tokio::main]
 async fn main()
 {
-	let dbpool = db::create_pool().expect("database pool can be created");
+	let t = cli::do_args();
+	let dbpool = db::create_pool(&t.0)
+		.expect("database pool can be created");
 
 	let check_db_health = warp::path!("health")
 		.and(with_db(dbpool.clone()))
