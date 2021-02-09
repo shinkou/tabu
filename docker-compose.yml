@@ -16,7 +16,7 @@ services:
       tabunet:
         ipv4_address: 172.20.2.4
   postgres:
-    image: postgres:11
+    image: postgres:13
     networks:
       tabunet:
         ipv4_address: 172.20.2.2
@@ -30,6 +30,7 @@ services:
       - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
   tabu:
     build: tabu
+    image: shinkou/tabu
     ports:
       - 8080:80
     networks:
